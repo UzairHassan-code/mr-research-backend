@@ -21,7 +21,7 @@ research_graph = create_research_graph()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"
-                   "https://mr-research-frontend.vercel.app/"],
+                   "https://mr-research-frontend.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
