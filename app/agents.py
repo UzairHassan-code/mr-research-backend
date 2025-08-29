@@ -3,7 +3,7 @@ import os
 import re
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable 
 from langchain_core.output_parsers.string import StrOutputParser
 from dotenv import load_dotenv
 from typing import Dict, Any
@@ -25,7 +25,7 @@ tavily_tool = get_tavily_search_tool()
 def generate_research_plan(state: AgentState) -> Dict[str, Any]:
     """Agent: Generates a research plan."""
     print("\n---AGENT: GENERATING RESEARCH PLAN---")
-    query = state["query"]
+    query = state["original_query"]
     
     # --- THIS IS THE FIX ---
     # The prompt now correctly uses .from_messages() to handle the system/human structure.
@@ -175,14 +175,30 @@ USER'S FOLLOW-UP QUESTION:
     }
 
 
+# --- ✨ THIS IS THE FIX: Upgraded Router Function ✨ ---
 def route_initial_or_follow_up(state: AgentState) -> str:
     """
-    Router: Decides whether to start a new research project or answer a follow-up.
+    Router: Decides whether to start a new research project, answer a follow-up,
+    or regenerate the research plan.
     """
-    print("\n---ROUTER: DECIDING INITIAL OR FOLLOW-UP---")
+    print("\n---ROUTER: DECIDING PATH---")
+    
+    # Get the most recent user query
+    user_query = state.get("query", "").lower()
+    
+    # Check if the user wants to change the plan
+    # This is a simple check; a more advanced version could use an LLM call for intent detection.
+    if "change" in user_query and "plan" in user_query:
+        print("---DECISION: REGENERATE RESEARCH PLAN---")
+        return "generate_research_plan"
+        
+    # Check if a summary exists from a completed research run
     if state.get("summary"):
-        print("---DECISION: FOLLOW-UP---")
+        print("---DECISION: ANSWER FOLLOW-UP---")
         return "answer_follow_up_question"
+    
+    # Otherwise, it's a new research query
     else:
         print("---DECISION: INITIAL RESEARCH---")
         return "generate_research_plan"
+

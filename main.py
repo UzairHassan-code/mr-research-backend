@@ -65,6 +65,7 @@ async def chat_endpoint(request: Request):
         input_data = {
             "thread_id": thread_id,
             "query": user_query,
+            "original_query": user_query,
             "research_plan": "",
             "raw_research_results": [],
             "summary": "",
@@ -89,7 +90,9 @@ async def chat_endpoint(request: Request):
                         if "research_plan" in node_output and node_output["research_plan"]:
                             event_payload = {"event": "research_plan", "data": node_output["research_plan"]}
                             yield f"data: {json.dumps(event_payload)}\n\n"
-                            return # Stop the stream and wait for approval
+                            if not thread_id:
+                                return 
+                        
 
                         # Stream the final answer (for both initial and follow-up questions)
                         if "final_chain" in node_output and "final_chain_inputs" in node_output:

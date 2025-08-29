@@ -11,6 +11,7 @@ class AgentState(TypedDict):
     # Add thread_id to the state to track conversations
     thread_id: str
     query: str
+    original_query: str
     research_plan: str
     raw_research_results: List[Dict[str, Any]]
     summary: str
